@@ -1,8 +1,8 @@
 import 'dart:io';
 
+import 'package:ble_dfu/ble_dfu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:ble_dfu/ble_dfu.dart';
 
 void main() => runApp(MyApp());
 
@@ -12,10 +12,9 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-
-  String _deviceName;
+  String? _deviceName;
   String _deviceAddress = "F6:61:0A:D6:98:5A";
-  String _lastDfuState;
+  String? _lastDfuState;
 
   @override
   initState() {
@@ -43,35 +42,28 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-
     final children = <Widget>[
       Text('Found device: ${_deviceName ?? "Not found"}'),
     ];
 
     if (Platform.isAndroid) {
-      children.add(
-          Padding(
-            padding: const EdgeInsets.only(top: 8.0),
-            child: Text('Device address: $_deviceAddress'),
-          )
-      );
+      children.add(Padding(
+        padding: const EdgeInsets.only(top: 8.0),
+        child: Text('Device address: $_deviceAddress'),
+      ));
     }
 
-    children.add(
-      Padding(
-        padding: const EdgeInsets.only(top: 8.0),
-        child: Text("Last state: ${_lastDfuState ?? ""}"),
-      )
-    );
+    children.add(Padding(
+      padding: const EdgeInsets.only(top: 8.0),
+      child: Text("Last state: ${_lastDfuState ?? ""}"),
+    ));
 
-    children.add(
-        Padding(
-          padding: const EdgeInsets.only(top: 16.0),
-          child: FlatButton(
-            child: Text("START DFU"),
-            onPressed: _deviceName != null ? _onStartDfuPressed : null),
-        )
-    );
+    final deviceName = _deviceName;
+    children.add(Padding(
+      padding: const EdgeInsets.only(top: 16.0),
+      child:
+          TextButton(child: Text("START DFU"), onPressed: deviceName != null ? _onStartDfuPressed(deviceName) : null),
+    ));
 
     return MaterialApp(
       home: Scaffold(
@@ -89,8 +81,9 @@ class _MyAppState extends State<MyApp> {
     );
   }
 
-  _onStartDfuPressed() {
-    BleDfu.startDfu("https://src.metaflow.co/firmware/lumen_v2_20181216.zip", _deviceAddress, _deviceName).listen((onData) {
+  _onStartDfuPressed(String deviceName) {
+    BleDfu.startDfu("https://src.metaflow.co/firmware/lumen_v2_20181216.zip", _deviceAddress, deviceName)
+        .listen((onData) {
       setState(() {
         _lastDfuState = onData.toString();
       });

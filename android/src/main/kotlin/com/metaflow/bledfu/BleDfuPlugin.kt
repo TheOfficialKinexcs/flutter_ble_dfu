@@ -2,7 +2,11 @@ package com.metaflow.bledfu
 
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import io.flutter.embedding.engine.plugins.FlutterPlugin
+import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterPluginBinding
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.EventChannel.EventSink
 import io.flutter.plugin.common.EventChannel.StreamHandler
@@ -20,12 +24,12 @@ import java.io.FileOutputStream
 import java.net.URL
 
 
-class BleDfuPlugin(private val registrar: Registrar) : MethodCallHandler, StreamHandler {
+class BleDfuPlugin : FlutterPlugin, MethodCallHandler, StreamHandler {
 
     companion object {
         @JvmStatic
         fun registerWith(registrar: Registrar) {
-            val plugin = BleDfuPlugin(registrar)
+            val plugin = BleDfuPlugin()
 
             val channel = MethodChannel(registrar.messenger(), "ble_dfu")
             channel.setMethodCallHandler(plugin)
@@ -36,6 +40,8 @@ class BleDfuPlugin(private val registrar: Registrar) : MethodCallHandler, Stream
     }
 
     private var eventSink: EventSink? = null
+    private val uiThreadHandler: Handler = Handler(Looper.getMainLooper())
+    private var binding: FlutterPluginBinding? = null
 
     private val dfuProgressListener = object : DfuProgressListenerAdapter() {
         override fun onDfuAborted(deviceAddress: String) {
@@ -55,12 +61,32 @@ class BleDfuPlugin(private val registrar: Registrar) : MethodCallHandler, Stream
             unregisterProgressListener()
         }
 
-        override fun onProgressChanged(deviceAddress: String, percent: Int, speed: Float, avgSpeed: Float, currentPart: Int, partsTotal: Int) {
+        override fun onProgressChanged(
+            deviceAddress: String,
+            percent: Int,
+            speed: Float,
+            avgSpeed: Float,
+            currentPart: Int,
+            partsTotal: Int
+        ) {
             super.onProgressChanged(deviceAddress, percent, speed, avgSpeed, currentPart, partsTotal)
 
             Log.d("BleDfuPlugin", "progress changed $percent")
             eventSink?.success("part: $currentPart, outOf: $partsTotal, to: $percent, speed: $avgSpeed")
         }
+    }
+
+    override fun onAttachedToEngine(binding: FlutterPluginBinding) {
+        this.binding = binding
+        val channel = MethodChannel(binding.binaryMessenger, "ble_dfu")
+        channel.setMethodCallHandler(this)
+
+        val eventChannel = EventChannel(binding.binaryMessenger, "ble_dfu_event")
+        eventChannel.setStreamHandler(this)
+    }
+
+    override fun onDetachedFromEngine(binding: FlutterPluginBinding) {
+        this.binding = null
     }
 
     /// MethodCallHandler
@@ -71,10 +97,11 @@ class BleDfuPlugin(private val registrar: Registrar) : MethodCallHandler, Stream
 
             "startDfu" -> {
                 startDfuService(
-                        result,
-                        call.argument("deviceAddress")!!,
-                        call.argument("deviceName")!!,
-                        call.argument("url")!!)
+                    result,
+                    call.argument("deviceAddress")!!,
+                    call.argument("deviceName")!!,
+                    call.argument("url")!!
+                )
             }
 
             else -> result.notImplemented()
@@ -94,6 +121,7 @@ class BleDfuPlugin(private val registrar: Registrar) : MethodCallHandler, Stream
     }
 
     private fun startDfuService(result: Result, deviceAddress: String, deviceName: String, urlString: String) {
+        val binding = this.binding ?: return
         Thread {
             Log.d("BleDfuPlugin", "startDfuService $deviceAddress $deviceName $urlString")
 
@@ -101,29 +129,28 @@ class BleDfuPlugin(private val registrar: Registrar) : MethodCallHandler, Stream
                 downloadFile(urlString, "dfu.zip")
             } catch (e: Exception) {
                 Log.e("BleDfuPlugin", "got exception", e)
-                registrar.activity().runOnUiThread {
+                uiThreadHandler.post {
                     result.error("DF", "Download failed", e.message)
                 }
                 return@Thread
             }
-
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                DfuServiceInitiator.createDfuNotificationChannel(registrar.activity())
+                DfuServiceInitiator.createDfuNotificationChannel(binding.applicationContext)
             }
 
             val starter = DfuServiceInitiator(deviceAddress)
-                    .setDeviceName(deviceName)
-                    .setKeepBond(false)
+                .setDeviceName(deviceName)
+                .setKeepBond(false)
 
             // In case of a ZIP file, the init packet (a DAT file) must be included inside the ZIP file.
             starter.setZip(uri, null)
 
-            DfuServiceListenerHelper.registerProgressListener(registrar.activity(), dfuProgressListener)
+            DfuServiceListenerHelper.registerProgressListener(binding.applicationContext, dfuProgressListener)
 
             // You may use the controller to pause, resume or abort the DFU process.
-            starter.start(registrar.activity(), DfuService::class.java)
+            starter.start(binding.applicationContext, DfuService::class.java)
 
-            registrar.activity().runOnUiThread {
+            uiThreadHandler.post {
                 result.success("success")
             }
 
@@ -131,7 +158,9 @@ class BleDfuPlugin(private val registrar: Registrar) : MethodCallHandler, Stream
     }
 
     fun unregisterProgressListener() {
-        DfuServiceListenerHelper.unregisterProgressListener(registrar.activity(), dfuProgressListener)
+        binding?.let { binding ->
+            DfuServiceListenerHelper.unregisterProgressListener(binding.applicationContext, dfuProgressListener)
+        }
     }
 
     @Suppress("SameParameterValue")
@@ -147,8 +176,10 @@ class BleDfuPlugin(private val registrar: Registrar) : MethodCallHandler, Stream
         // input stream to read file - with 8k buffer
         val input = BufferedInputStream(url.openStream(), 8192)
 
+        val binding = this.binding ?: return null
+
         // External directory path to save file
-        val directory = File(registrar.activity().cacheDir, "lumen_dfu")
+        val directory = File(binding.applicationContext.cacheDir, "lumen_dfu")
 
         // Create lumen dfu folder if it does not exist
         if (!directory.exists()) {

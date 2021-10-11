@@ -1,7 +1,6 @@
 name: ble_dfu
 description: A new flutter plugin project.
 version: 0.0.2
-author:
 homepage:
 
 dependencies:
@@ -12,7 +11,7 @@ dependencies:
 # following page: https://www.dartlang.org/tools/pub/pubspec
 
 environment:
- sdk: ">=2.0.0-dev.28.0 <3.0.0"
+ sdk: ">=2.12.0 <3.0.0"
 
 # The following section is specific to Flutter.
 flutter:
