@@ -14,7 +14,6 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
-import io.flutter.plugin.common.PluginRegistry.Registrar
 import no.nordicsemi.android.dfu.DfuProgressListenerAdapter
 import no.nordicsemi.android.dfu.DfuServiceInitiator
 import no.nordicsemi.android.dfu.DfuServiceListenerHelper
@@ -25,19 +24,6 @@ import java.net.URL
 
 
 class BleDfuPlugin : FlutterPlugin, MethodCallHandler, StreamHandler {
-
-    companion object {
-        @JvmStatic
-        fun registerWith(registrar: Registrar) {
-            val plugin = BleDfuPlugin()
-
-            val channel = MethodChannel(registrar.messenger(), "ble_dfu")
-            channel.setMethodCallHandler(plugin)
-
-            val eventChannel = EventChannel(registrar.messenger(), "ble_dfu_event")
-            eventChannel.setStreamHandler(plugin)
-        }
-    }
 
     private var eventSink: EventSink? = null
     private val uiThreadHandler: Handler = Handler(Looper.getMainLooper())
