@@ -1,12 +1,13 @@
 package com.metaflow.bledfu
 
+import android.app.Activity
 import android.net.Uri
 import android.os.Build
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterPluginBinding
+import io.flutter.embedding.engine.plugins.activity.ActivityAware
+import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
 import io.flutter.plugin.common.EventChannel
 import io.flutter.plugin.common.EventChannel.EventSink
 import io.flutter.plugin.common.EventChannel.StreamHandler
@@ -23,11 +24,13 @@ import java.io.FileOutputStream
 import java.net.URL
 
 
-class BleDfuPlugin : FlutterPlugin, MethodCallHandler, StreamHandler {
+class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHandler {
 
     private var eventSink: EventSink? = null
-    private val uiThreadHandler: Handler = Handler(Looper.getMainLooper())
     private var binding: FlutterPluginBinding? = null
+    private var channel: MethodChannel? = null
+    private var eventChannel: EventChannel? = null
+    private var activity: Activity? = null
 
     private val dfuProgressListener = object : DfuProgressListenerAdapter() {
         override fun onDfuAborted(deviceAddress: String) {
@@ -64,15 +67,38 @@ class BleDfuPlugin : FlutterPlugin, MethodCallHandler, StreamHandler {
 
     override fun onAttachedToEngine(binding: FlutterPluginBinding) {
         this.binding = binding
-        val channel = MethodChannel(binding.binaryMessenger, "ble_dfu")
-        channel.setMethodCallHandler(this)
 
-        val eventChannel = EventChannel(binding.binaryMessenger, "ble_dfu_event")
-        eventChannel.setStreamHandler(this)
+        channel = MethodChannel(binding.binaryMessenger, "ble_dfu")
+        channel?.setMethodCallHandler(this)
+
+        eventChannel = EventChannel(binding.binaryMessenger, "ble_dfu_event")
+        eventChannel?.setStreamHandler(this)
     }
 
     override fun onDetachedFromEngine(binding: FlutterPluginBinding) {
         this.binding = null
+
+        channel?.setMethodCallHandler(null)
+        channel = null
+
+        eventChannel?.setStreamHandler(null)
+        eventChannel = null
+    }
+
+    override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+        activity = binding.activity
+    }
+
+    override fun onDetachedFromActivityForConfigChanges() {
+        activity = null
+    }
+
+    override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
+        activity = binding.activity
+    }
+
+    override fun onDetachedFromActivity() {
+        activity = null
     }
 
     /// MethodCallHandler
@@ -107,7 +133,6 @@ class BleDfuPlugin : FlutterPlugin, MethodCallHandler, StreamHandler {
     }
 
     private fun startDfuService(result: Result, deviceAddress: String, deviceName: String, urlString: String) {
-        val binding = this.binding ?: return
         Thread {
             Log.d("BleDfuPlugin", "startDfuService $deviceAddress $deviceName $urlString")
 
@@ -115,9 +140,14 @@ class BleDfuPlugin : FlutterPlugin, MethodCallHandler, StreamHandler {
                 downloadFile(urlString, "dfu.zip")
             } catch (e: Exception) {
                 Log.e("BleDfuPlugin", "got exception", e)
-                uiThreadHandler.post {
+                activity?.runOnUiThread {
                     result.error("DF", "Download failed", e.message)
                 }
+                return@Thread
+            }
+            val binding = this.binding
+            if (binding == null) {
+                Log.e("BleDfuPlugin", "no app context binding after FW download. Can't continue")
                 return@Thread
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -136,7 +166,7 @@ class BleDfuPlugin : FlutterPlugin, MethodCallHandler, StreamHandler {
             // You may use the controller to pause, resume or abort the DFU process.
             starter.start(binding.applicationContext, DfuService::class.java)
 
-            uiThreadHandler.post {
+            activity?.runOnUiThread {
                 result.success("success")
             }
 
@@ -182,7 +212,6 @@ class BleDfuPlugin : FlutterPlugin, MethodCallHandler, StreamHandler {
 
         while (count != -1) {
             total += count
-//                Log.d("BleDfuPlugin", "Progress: $total out of $lengthOfFile")
 
             // writing data to file
             output.write(data, 0, count)
