@@ -13,7 +13,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String? _deviceName;
-  String _deviceAddress = "F6:61:0A:D6:98:5A";
+  String _deviceAddress = "EB:9A:CE:41:6A:44";
   String? _lastDfuState;
 
   @override
@@ -26,7 +26,7 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   initPlatformState() async {
     if (!Platform.isIOS) {
-      _deviceName = "LUMEN_DFU";
+      _deviceName = "DFU-TEST";
       return;
     }
 
@@ -82,7 +82,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   _onStartDfuPressed(String deviceName) {
-    BleDfu.startDfu("https://src.metaflow.co/firmware/lumen_v2_20181216.zip", _deviceAddress, deviceName)
+    BleDfu.startDfu("https://drive.google.com/uc?export=download&id=1Pmbcr1xuGIULXG_G7i2c1mHW-sG9x_AK", _deviceAddress, deviceName)
         .listen((onData) {
       setState(() {
         _lastDfuState = onData.toString();

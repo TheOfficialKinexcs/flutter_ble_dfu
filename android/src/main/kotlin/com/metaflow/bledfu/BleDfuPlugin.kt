@@ -137,7 +137,7 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
             Log.d("BleDfuPlugin", "startDfuService $deviceAddress $deviceName $urlString")
 
             val uri = try {
-                downloadFile(urlString, "dfu.zip")
+                downloadFile(urlString, "file.zip")
             } catch (e: Exception) {
                 Log.e("BleDfuPlugin", "got exception", e)
                 activity?.runOnUiThread {
@@ -157,9 +157,14 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
             val starter = DfuServiceInitiator(deviceAddress)
                 .setDeviceName(deviceName)
                 .setKeepBond(false)
+                .setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true)
 
             // In case of a ZIP file, the init packet (a DAT file) must be included inside the ZIP file.
             starter.setZip(uri, null)
+            //starter.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true)
+            //if (enableUnsafeExperimentalButtonlessServiceInSecureDfu != null) {
+            //    starter.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(enableUnsafeExperimentalButtonlessServiceInSecureDfu)
+            //}
 
             DfuServiceListenerHelper.registerProgressListener(binding.applicationContext, dfuProgressListener)
 
@@ -184,28 +189,34 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
         Log.d("BleDfuPlugin", "downloadFile $urlString $fileName")
 
         var count: Int
-
+        print("hmm")
         val url = URL(urlString)
         val connection = url.openConnection()
         connection.connect()
 
         // input stream to read file - with 8k buffer
-        val input = BufferedInputStream(url.openStream(), 8192)
+        val input = BufferedInputStream(url.openStream(), 16384)
 
         val binding = this.binding ?: return null
 
         // External directory path to save file
-        val directory = File(binding.applicationContext.cacheDir, "lumen_dfu")
+        val directory = File(binding.applicationContext.cacheDir, "kimia_dfu")
 
         // Create lumen dfu folder if it does not exist
         if (!directory.exists()) {
+            Log.d("BleDfuPlugin", "directory does not exist")
             directory.mkdirs()
         }
+    
+        Log.d("BleDfuPlugin", "directory path")
+        Log.d("BleDfuPlugin", "directory ${directory}")
+   
 
         val outputFile = File(directory, fileName)
+        
         // Output stream to write file
         val output = FileOutputStream(outputFile)
-        val data = ByteArray(4096)
+        val data = ByteArray(8192)
 
         var total = 0
         count = input.read(data)
