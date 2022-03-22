@@ -26,7 +26,7 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   initPlatformState() async {
     if (!Platform.isIOS) {
-      _deviceName = "KIMIA-EB9A";
+      _deviceName = "DFU-Test";
       return;
     }
 
@@ -62,7 +62,7 @@ class _MyAppState extends State<MyApp> {
     children.add(Padding(
       padding: const EdgeInsets.only(top: 16.0),
       child:
-          TextButton(child: Text("START DFU"), onPressed: deviceName != null ? _onStartDfuPressed(deviceName) : null),
+          TextButton(child: Text("START DFU"), onPressed: () => deviceName != null ? _onStartDfuPressed(deviceName) : null),
     ));
 
     return MaterialApp(
