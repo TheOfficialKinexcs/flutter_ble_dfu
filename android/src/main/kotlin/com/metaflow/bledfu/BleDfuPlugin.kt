@@ -137,7 +137,7 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
             Log.d("BleDfuPlugin", "startDfuService $deviceAddress $deviceName $urlString")
 
             val uri = try {
-                downloadFile(urlString, "file.zip")
+                downloadFile(urlString, "appOnly.zip")
             } catch (e: Exception) {
                 Log.e("BleDfuPlugin", "got exception", e)
                 activity?.runOnUiThread {
@@ -157,7 +157,7 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
             val starter = DfuServiceInitiator(deviceAddress)
                 .setDeviceName(deviceName)
                 .setKeepBond(false)
-                .setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true)
+                //.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true)
 
             // In case of a ZIP file, the init packet (a DAT file) must be included inside the ZIP file.
             starter.setZip(uri, null)
@@ -195,7 +195,7 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
         connection.connect()
 
         // input stream to read file - with 8k buffer
-        val input = BufferedInputStream(url.openStream(), 16384)
+        val input = BufferedInputStream(url.openStream(), 8192)
 
         val binding = this.binding ?: return null
 
@@ -216,7 +216,7 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
         
         // Output stream to write file
         val output = FileOutputStream(outputFile)
-        val data = ByteArray(8192)
+        val data = ByteArray(4096)
 
         var total = 0
         count = input.read(data)

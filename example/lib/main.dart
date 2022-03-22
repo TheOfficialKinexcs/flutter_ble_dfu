@@ -26,7 +26,7 @@ class _MyAppState extends State<MyApp> {
   // Platform messages are asynchronous, so we initialize in an async method.
   initPlatformState() async {
     if (!Platform.isIOS) {
-      _deviceName = "DFU-TEST";
+      _deviceName = "KIMIA-EB9A";
       return;
     }
 
@@ -80,9 +80,11 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
-
+  //https://drive.google.com/file/d/1Pmbcr1xuGIULXG_G7i2c1mHW-sG9x_AK/view?usp=sharing
+  //https://drive.google.com/uc?export=download&id=1Pmbcr1xuGIULXG_G7i2c1mHW-sG9x_AK
+  //https://drive.google.com/file/d/1HDHuIRF1-AEtoOfzKoVfh6GGFGXnZyAY/view?usp=sharing
   _onStartDfuPressed(String deviceName) {
-    BleDfu.startDfu("https://drive.google.com/uc?export=download&id=1Pmbcr1xuGIULXG_G7i2c1mHW-sG9x_AK", _deviceAddress, deviceName)
+    BleDfu.startDfu("https://drive.google.com/uc?export=download&id=1HDHuIRF1-AEtoOfzKoVfh6GGFGXnZyAY", _deviceAddress, deviceName)
         .listen((onData) {
       setState(() {
         _lastDfuState = onData.toString();
