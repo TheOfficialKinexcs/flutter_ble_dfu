@@ -3,6 +3,7 @@ package com.metaflow.bledfu
 import android.app.Activity
 import android.net.Uri
 import android.os.Build
+import android.os.Handler
 import android.util.Log
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterPluginBinding
@@ -22,6 +23,7 @@ import java.io.BufferedInputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.net.URL
+import java.util.*
 
 
 class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHandler {
@@ -47,6 +49,18 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
 
         override fun onDeviceDisconnected(deviceAddress: String) {
             super.onDeviceDisconnected(deviceAddress)
+            unregisterProgressListener()
+        }
+
+        override fun onDfuCompleted(deviceAddress: String) {
+            super.onDfuCompleted(deviceAddress)
+            println("${Thread.currentThread().name}")
+            
+            println("invoking completion");
+            channel!!.invokeMethod("onDfuCompleted", deviceAddress)
+            //this@NordicDfuPlugin.runOnUiThread(java.lang.Runnable {
+            //    channel!!.invokeMethod("onDfuCompleted", deviceAddress)
+            //})
             unregisterProgressListener()
         }
 

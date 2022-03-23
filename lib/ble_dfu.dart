@@ -18,6 +18,23 @@ class BleDfu {
       "deviceName": deviceName,
       "url": url
     });
+
+    _channel.setMethodCallHandler((MethodCall call) {
+      switch (call.method) {
+        case 'onDfuCompleted':
+          print("dfuCompleteddd");
+          //sss = "done";
+          break;
+        default:
+          throw UnimplementedError();
+      }
+      throw UnimplementedError();
+    });
+
     return stream;
+  }
+
+  static Stream<int> get getRandomNumberStream {
+    return _eventChannel.receiveBroadcastStream().cast();
   }
 }
