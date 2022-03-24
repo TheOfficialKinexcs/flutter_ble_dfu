@@ -151,7 +151,7 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
             Log.d("BleDfuPlugin", "startDfuService $deviceAddress $deviceName $urlString")
 
             val uri = try {
-                downloadFile(urlString, "appOnly.zip")
+                downloadFile(urlString, "version0299.zip")
             } catch (e: Exception) {
                 Log.e("BleDfuPlugin", "got exception", e)
                 activity?.runOnUiThread {
