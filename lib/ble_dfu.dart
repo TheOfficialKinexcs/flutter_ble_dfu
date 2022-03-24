@@ -7,6 +7,8 @@ class BleDfu {
 
   static const EventChannel _eventChannel = const EventChannel('ble_dfu_event');
 
+  static bool isDfuComplete = false;
+
   static Future<String> get scanForDfuDevice async {
     return await _channel.invokeMethod('scanForDfuDevice');
   }
@@ -23,6 +25,7 @@ class BleDfu {
         case 'onDfuCompleted':
           print("dfuCompleteddd");
           //sss = "done";
+          isDfuComplete = true;
           break;
         default:
           throw UnimplementedError();

@@ -125,7 +125,6 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
                 startDfuService(
                     result,
                     call.argument("deviceAddress")!!,
-                    call.argument("deviceName")!!,
                     call.argument("url")!!
                 )
             }

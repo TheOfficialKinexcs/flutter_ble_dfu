@@ -85,7 +85,7 @@ class _MyAppState extends State<MyApp> {
   //https://drive.google.com/file/d/1HDHuIRF1-AEtoOfzKoVfh6GGFGXnZyAY/view?usp=sharing
   //https://drive.google.com/file/d/1O_LnoKtJ4czoLl-tZeTTl377b-QiHub0/view?usp=sharing
   onStartDfuPressed(String deviceName) {
-    BleDfu.startDfu("https://drive.google.com/uc?export=download&id=1O_LnoKtJ4czoLl-tZeTTl377b-QiHub0", _deviceAddress, deviceName)
+    BleDfu.startDfu("https://drive.google.com/uc?export=download&id=1O_LnoKtJ4czoLl-tZeTTl377b-QiHub0", _deviceAddress)
         .listen((onData) {
       setState(() {
         _lastDfuState = onData.toString();
