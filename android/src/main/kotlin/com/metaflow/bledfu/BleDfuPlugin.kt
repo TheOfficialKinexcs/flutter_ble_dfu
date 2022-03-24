@@ -146,9 +146,9 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
         eventSink = null
     }
 
-    private fun startDfuService(result: Result, deviceAddress: String, deviceName: String, urlString: String) {
+    private fun startDfuService(result: Result, deviceAddress: String, urlString: String) {
         Thread {
-            Log.d("BleDfuPlugin", "startDfuService $deviceAddress $deviceName $urlString")
+            Log.d("BleDfuPlugin", "startDfuService $deviceAddress $urlString")
 
             val uri = try {
                 downloadFile(urlString, "version0299.zip")
@@ -169,7 +169,6 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
             }
 
             val starter = DfuServiceInitiator(deviceAddress)
-                .setDeviceName(deviceName)
                 .setKeepBond(false)
                 //.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true)
 

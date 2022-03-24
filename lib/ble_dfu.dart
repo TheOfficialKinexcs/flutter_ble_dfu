@@ -11,11 +11,10 @@ class BleDfu {
     return await _channel.invokeMethod('scanForDfuDevice');
   }
 
-  static Stream<dynamic> startDfu(String url, String deviceAddress, String deviceName) {
+  static Stream<dynamic> startDfu(String url, String deviceAddress) {
     final stream = _eventChannel.receiveBroadcastStream();
     _channel.invokeMethod('startDfu', {
       "deviceAddress": deviceAddress,
-      "deviceName": deviceName,
       "url": url
     });
 
