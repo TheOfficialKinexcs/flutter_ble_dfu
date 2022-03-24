@@ -152,10 +152,14 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
             val uri = try {
                 downloadFile(urlString, "version0299.zip")
             } catch (e: Exception) {
+                activity?.runOnUiThread{
+                    channel!!.invokeMethod("onDownloadFail", deviceAddress);
+                }
                 Log.e("BleDfuPlugin", "got exception", e)
                 activity?.runOnUiThread {
                     result.error("DF", "Download failed", e.message)
                 }
+                Log.e("BleDfuPlugin", "invoking onDownloadFail")
                 return@Thread
             }
             val binding = this.binding

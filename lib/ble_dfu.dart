@@ -9,6 +9,8 @@ class BleDfu {
 
   static bool isDfuComplete = false;
 
+  static bool isDownloadFailed = false;
+
   static Future<String> get scanForDfuDevice async {
     return await _channel.invokeMethod('scanForDfuDevice');
   }
@@ -26,6 +28,10 @@ class BleDfu {
           print("dfuCompleteddd");
           //sss = "done";
           isDfuComplete = true;
+          break;
+        case 'onDownloadFail':
+          print("download failed");
+          isDownloadFailed = true;
           break;
         default:
           throw UnimplementedError();
