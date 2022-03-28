@@ -5,6 +5,8 @@ import android.net.Uri
 import android.os.Build
 import android.os.Handler
 import android.util.Log
+import android.content.Context  
+import io.flutter.FlutterInjector
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.FlutterPlugin.FlutterPluginBinding
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
@@ -33,6 +35,7 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
     private var channel: MethodChannel? = null
     private var eventChannel: EventChannel? = null
     private var activity: Activity? = null
+    private var mContext: Context? = null
 
     private val dfuProgressListener = object : DfuProgressListenerAdapter() {
         override fun onDfuAborted(deviceAddress: String) {
@@ -82,6 +85,8 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
     override fun onAttachedToEngine(binding: FlutterPluginBinding) {
         this.binding = binding
 
+        mContext = binding.applicationContext
+
         channel = MethodChannel(binding.binaryMessenger, "ble_dfu")
         channel?.setMethodCallHandler(this)
 
@@ -91,6 +96,8 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
 
     override fun onDetachedFromEngine(binding: FlutterPluginBinding) {
         this.binding = null
+
+        mContext = null
 
         channel?.setMethodCallHandler(null)
         channel = null
@@ -148,7 +155,7 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
     private fun startDfuService(result: Result, deviceAddress: String, urlString: String) {
         Thread {
             Log.d("BleDfuPlugin", "startDfuService $deviceAddress $urlString")
-
+            /* 
             val uri = try {
                 downloadFile(urlString, "version0299.zip")
             } catch (e: Exception) {
@@ -162,6 +169,7 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
                 Log.e("BleDfuPlugin", "invoking onDownloadFail")
                 return@Thread
             }
+            */
             val binding = this.binding
             if (binding == null) {
                 Log.e("BleDfuPlugin", "no app context binding after FW download. Can't continue")
@@ -170,17 +178,26 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 DfuServiceInitiator.createDfuNotificationChannel(binding.applicationContext)
             }
-
+            print("urlString: ")
+            println(urlString)
+         
+            //getting file straight from assets folder
+            // val loader = FlutterInjector.instance().flutterLoader()
+            // var filePath = loader.getLookupKeyForAsset("assets/version0289.zip")
+            // val tempFileName = (PathUtils.getExternalAppCachePath(mContext!!)
+            //         + UUID.randomUUID().toString())
+            // // copy asset file to temp path
+            // ResourceUtils.copyFileFromAssets(filePath, tempFileName, mContext!!)
+            // // now, the path is an absolute path, and can pass it to nordic dfu libarary
+            // filePath = tempFileName
+            
             val starter = DfuServiceInitiator(deviceAddress)
                 .setKeepBond(false)
-                //.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true)
-
+                //.setZip(null,filePath!!)
+                .setZip(urlString)
             // In case of a ZIP file, the init packet (a DAT file) must be included inside the ZIP file.
-            starter.setZip(uri, null)
-            //starter.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(true)
-            //if (enableUnsafeExperimentalButtonlessServiceInSecureDfu != null) {
-            //    starter.setUnsafeExperimentalButtonlessServiceInSecureDfuEnabled(enableUnsafeExperimentalButtonlessServiceInSecureDfu)
-            //}
+            //starter.setZip(uri, null)
+            //starter.setZip(filePath!!)
 
             DfuServiceListenerHelper.registerProgressListener(binding.applicationContext, dfuProgressListener)
 

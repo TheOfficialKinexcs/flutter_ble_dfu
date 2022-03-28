@@ -1,4 +1,4 @@
-package dev.steenbakker.nordicdfu
+package com.metaflow.bledfu
 
 import android.content.Context
 import java.io.*

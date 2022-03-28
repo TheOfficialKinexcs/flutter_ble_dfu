@@ -1,8 +1,11 @@
 import 'dart:io';
+import 'dart:async';
 
 import 'package:ble_dfu/ble_dfu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as p;
 
 void main() => runApp(MyApp());
 
@@ -80,16 +83,55 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
+  
+  Future<String> copyFromAssetsToCache() async {
+    String path = 'assets/version0289.zip';
+    final Directory docDir = await getTemporaryDirectory();
+    final String localPath = docDir.path;
+    File file = File('$localPath/${path.split('/').last}');
+    final imageBytes = await rootBundle.load(path);
+    final buffer = imageBytes.buffer;
+    await file.writeAsBytes(
+      buffer.asUint8List(imageBytes.offsetInBytes, imageBytes.lengthInBytes));  
+
+    String localPath2 = p.join(localPath,"version0289.zip");
+
+    return localPath2;
+  }
+  
   //https://drive.google.com/file/d/1Pmbcr1xuGIULXG_G7i2c1mHW-sG9x_AK/view?usp=sharing
   //https://drive.google.com/uc?export=download&id=1Pmbcr1xuGIULXG_G7i2c1mHW-sG9x_AK
   //https://drive.google.com/file/d/1HDHuIRF1-AEtoOfzKoVfh6GGFGXnZyAY/view?usp=sharing
   //https://drive.google.com/file/d/1O_LnoKtJ4czoLl-tZeTTl377b-QiHub0/view?usp=sharing
-  onStartDfuPressed(String deviceName) {
-    BleDfu.startDfu("https://drive.google.com/uc?export=download&id=1O_LnoKtJ4czoLl-tZeTTl377b-QiHub0", _deviceAddress)
+  onStartDfuPressed(String deviceName) async {
+    //get list of files in directory
+    // List<FileSystemEntity> _folders;
+    // String pdfDirectory = '$localPath/';
+    // final myDir = new Directory(pdfDirectory);
+    // _folders = myDir.listSync(recursive: true, followLinks: false);
+    // print("_folders: $_folders");
+    String path = await copyFromAssetsToCache();
+    print("isDfuComplete: ${BleDfu.isDfuComplete}");
+    BleDfu.startDfu(path, _deviceAddress)
         .listen((onData) {
       setState(() {
         _lastDfuState = onData.toString();
       });
+    });
+
+    Timer.periodic(Duration(seconds: 2), (res) async {
+      print("jeezus");
+      if(BleDfu.isDfuComplete){
+        res.cancel();
+        BleDfu.isDfuComplete = false;
+        final file = File(path);
+        try {
+          await file.delete();
+          print("file deleted");
+        } catch (e) {
+          print("gg cant delete");
+        }
+      }
     });
   }
 }
