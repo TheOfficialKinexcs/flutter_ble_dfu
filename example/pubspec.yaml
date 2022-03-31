@@ -35,6 +35,7 @@ flutter:
 
   assets:
     - assets/version0289.zip
+    - assets/auto.zip
 
   # To add assets to your application, add an assets section, like this:
   # assets:

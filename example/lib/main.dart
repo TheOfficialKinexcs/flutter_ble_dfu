@@ -16,7 +16,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String? _deviceName;
-  String _deviceAddress = "EB:9A:CE:41:6A:44";
+  String _deviceAddress = "E8:12:CE:3A:BC:66";
   String? _lastDfuState;
 
   @override
@@ -85,7 +85,7 @@ class _MyAppState extends State<MyApp> {
   }
   
   Future<String> copyFromAssetsToCache() async {
-    String path = 'assets/version0289.zip';
+    String path = 'assets/auto.zip';
     final Directory docDir = await getTemporaryDirectory();
     final String localPath = docDir.path;
     File file = File('$localPath/${path.split('/').last}');
@@ -94,7 +94,7 @@ class _MyAppState extends State<MyApp> {
     await file.writeAsBytes(
       buffer.asUint8List(imageBytes.offsetInBytes, imageBytes.lengthInBytes));  
 
-    String localPath2 = p.join(localPath,"version0289.zip");
+    String localPath2 = p.join(localPath,"auto.zip");
 
     return localPath2;
   }
