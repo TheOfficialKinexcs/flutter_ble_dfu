@@ -33,6 +33,10 @@ class BleDfu {
           print("download failed");
           isDownloadFailed = true;
           break;
+        case 'onError':
+          print("onError");
+          isDownloadFailed = true;
+          break;
         default:
           throw UnimplementedError();
       }

@@ -45,8 +45,10 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
         }
 
         override fun onError(deviceAddress: String, error: Int, errorType: Int, message: String?) {
+            println("onError in Kotlin");
             super.onError(deviceAddress, error, errorType, message)
             eventSink?.error("DE", "Error $error", message)
+            channel!!.invokeMethod("onError", deviceAddress)
             unregisterProgressListener()
         }
 
