@@ -141,19 +141,11 @@ public class SwiftBleDfuPlugin: NSObject, FlutterPlugin, DFUServiceDelegate {
    }
   
    public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-       if (call.method == "startDfu") {
-           // guard let arguments = call.arguments as? Dictionary<String, AnyObject> else {
-           //     result(FlutterError(code: "ABNORMAL_PARAMETER", message: "no parameters", details: nil))
-           //     return
-           // }
-           // let name = arguments["url"] as? String
-           // guard let address = arguments["deviceAddress"] as? String else {
-           //         result(FlutterError(code: "ABNORMAL_PARAMETER", message: "address and filePath are required", details: nil))
-           //         return
-           // }
-          
+       if (call.method == "startDfu") {    
            let params = call.arguments as! Dictionary<String,String>
            deviceAddress = params["deviceAddress"]
+           print("url: \(params["url"])")
+           print("deviceAddress: \(deviceAddress)")
            start(params["url"]!, identifier: UUID(uuidString: params["deviceAddress"]!)!)
            result("started")
  
@@ -167,11 +159,16 @@ public class SwiftBleDfuPlugin: NSObject, FlutterPlugin, DFUServiceDelegate {
       
        do {
            //self.deviceAddress = identifier
-          
-           let pathUrl = URL(string: url)!
+           print("starting start")
+           var newFilePath = "file://\(url)"
+           print("new filePath: \(newFilePath)")
+           let pathUrl = URL(string: newFilePath)!
            let zipfileData = try Data(contentsOf: pathUrl)
+ 
           
            let selectedFirmware = DFUFirmware(zipFile: zipfileData)
+           //let selectedFirmware = DFUFirmware(urlToZipFile: URL(fileURLWithPath: newFilePath))
+          
            let initiator = DFUServiceInitiator()
            //initiator.progressDelegate = self
            initiator.delegate = self
@@ -198,4 +195,5 @@ public class SwiftBleDfuPlugin: NSObject, FlutterPlugin, DFUServiceDelegate {
        }
    }
 }
+
 
