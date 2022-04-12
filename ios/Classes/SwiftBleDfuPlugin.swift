@@ -172,14 +172,14 @@ public class SwiftBleDfuPlugin: NSObject, FlutterPlugin, DFUServiceDelegate {
            if selectedFirmware == nil {
                print("nil error")
                channel.invokeMethod("onError", arguments: deviceAddress)
-           }
+           } else {
 
-           let initiator = DFUServiceInitiator()
-           //initiator.progressDelegate = self
-           initiator.delegate = self
-           initiator.enableUnsafeExperimentalButtonlessServiceInSecureDfu = true
-           dfuController = initiator.with(firmware: selectedFirmware!).start(targetWithIdentifier: identifier)
-          
+               let initiator = DFUServiceInitiator()
+               //initiator.progressDelegate = self
+               initiator.delegate = self
+               initiator.enableUnsafeExperimentalButtonlessServiceInSecureDfu = true
+               dfuController = initiator.with(firmware: selectedFirmware!).start(targetWithIdentifier: identifier)
+           }
        } catch {
            print(error.localizedDescription)
        }
