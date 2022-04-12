@@ -166,7 +166,7 @@ public class SwiftBleDfuPlugin: NSObject, FlutterPlugin, DFUServiceDelegate {
            let zipfileData = try Data(contentsOf: pathUrl)
  
           
-           let selectedFirmware = DFUFirmware(zipFile: zipfileData)
+           let selectedFirmware = try DFUFirmware(zipFile: zipfileData)
            //let selectedFirmware = DFUFirmware(urlToZipFile: URL(fileURLWithPath: newFilePath))
           
            let initiator = DFUServiceInitiator()
