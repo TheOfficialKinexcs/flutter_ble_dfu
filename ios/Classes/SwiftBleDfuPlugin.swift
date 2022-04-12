@@ -169,6 +169,11 @@ public class SwiftBleDfuPlugin: NSObject, FlutterPlugin, DFUServiceDelegate {
            let selectedFirmware = try DFUFirmware(zipFile: zipfileData)
            //let selectedFirmware = DFUFirmware(urlToZipFile: URL(fileURLWithPath: newFilePath))
           
+           if selectedFirmware == nil {
+               print("nil error")
+               channel.invokeMethod("onError", arguments: deviceAddress)
+           }
+
            let initiator = DFUServiceInitiator()
            //initiator.progressDelegate = self
            initiator.delegate = self
