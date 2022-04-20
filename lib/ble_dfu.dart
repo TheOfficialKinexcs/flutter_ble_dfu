@@ -45,7 +45,7 @@ class BleDfu {
 
     return stream;
   }
-
+  //prob not needed
   static Stream<int> get getRandomNumberStream {
     return _eventChannel.receiveBroadcastStream().cast();
   }

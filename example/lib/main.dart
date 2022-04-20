@@ -85,7 +85,8 @@ class _MyAppState extends State<MyApp> {
   }
   
   Future<String> copyFromAssetsToCache() async {
-    String path = 'assets/version0289.zip';
+    String fileName = "test.zip";
+    String path = 'assets/$fileName';
     final Directory docDir = await getTemporaryDirectory();
     final String localPath = docDir.path;
     File file = File('$localPath/${path.split('/').last}');
@@ -94,22 +95,12 @@ class _MyAppState extends State<MyApp> {
     await file.writeAsBytes(
       buffer.asUint8List(imageBytes.offsetInBytes, imageBytes.lengthInBytes));  
 
-    String localPath2 = p.join(localPath,"version0289.zip");
+    String localPath2 = p.join(localPath,fileName);
 
     return localPath2;
   }
   
-  //https://drive.google.com/file/d/1Pmbcr1xuGIULXG_G7i2c1mHW-sG9x_AK/view?usp=sharing
-  //https://drive.google.com/uc?export=download&id=1Pmbcr1xuGIULXG_G7i2c1mHW-sG9x_AK
-  //https://drive.google.com/file/d/1HDHuIRF1-AEtoOfzKoVfh6GGFGXnZyAY/view?usp=sharing
-  //https://drive.google.com/file/d/1O_LnoKtJ4czoLl-tZeTTl377b-QiHub0/view?usp=sharing
   onStartDfuPressed(String deviceName) async {
-    //get list of files in directory
-    // List<FileSystemEntity> _folders;
-    // String pdfDirectory = '$localPath/';
-    // final myDir = new Directory(pdfDirectory);
-    // _folders = myDir.listSync(recursive: true, followLinks: false);
-    // print("_folders: $_folders");
     String path = await copyFromAssetsToCache();
     print("isDfuComplete: ${BleDfu.isDfuComplete}");
     BleDfu.startDfu(path, _deviceAddress)

@@ -63,9 +63,7 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
             
             println("invoking completion");
             channel!!.invokeMethod("onDfuCompleted", deviceAddress)
-            //this@NordicDfuPlugin.runOnUiThread(java.lang.Runnable {
-            //    channel!!.invokeMethod("onDfuCompleted", deviceAddress)
-            //})
+
             unregisterProgressListener()
         }
 
@@ -157,21 +155,7 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
     private fun startDfuService(result: Result, deviceAddress: String, urlString: String) {
         Thread {
             Log.d("BleDfuPlugin", "startDfuService $deviceAddress $urlString")
-            /* 
-            val uri = try {
-                downloadFile(urlString, "version0299.zip")
-            } catch (e: Exception) {
-                activity?.runOnUiThread{
-                    channel!!.invokeMethod("onDownloadFail", deviceAddress);
-                }
-                Log.e("BleDfuPlugin", "got exception", e)
-                activity?.runOnUiThread {
-                    result.error("DF", "Download failed", e.message)
-                }
-                Log.e("BleDfuPlugin", "invoking onDownloadFail")
-                return@Thread
-            }
-            */
+      
             val binding = this.binding
             if (binding == null) {
                 Log.e("BleDfuPlugin", "no app context binding after FW download. Can't continue")
@@ -182,24 +166,10 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
             }
             print("urlString: ")
             println(urlString)
-         
-            //getting file straight from assets folder
-            // val loader = FlutterInjector.instance().flutterLoader()
-            // var filePath = loader.getLookupKeyForAsset("assets/version0289.zip")
-            // val tempFileName = (PathUtils.getExternalAppCachePath(mContext!!)
-            //         + UUID.randomUUID().toString())
-            // // copy asset file to temp path
-            // ResourceUtils.copyFileFromAssets(filePath, tempFileName, mContext!!)
-            // // now, the path is an absolute path, and can pass it to nordic dfu libarary
-            // filePath = tempFileName
             
             val starter = DfuServiceInitiator(deviceAddress)
                 .setKeepBond(false)
-                //.setZip(null,filePath!!)
                 .setZip(urlString)
-            // In case of a ZIP file, the init packet (a DAT file) must be included inside the ZIP file.
-            //starter.setZip(uri, null)
-            //starter.setZip(filePath!!)
 
             DfuServiceListenerHelper.registerProgressListener(binding.applicationContext, dfuProgressListener)
 
