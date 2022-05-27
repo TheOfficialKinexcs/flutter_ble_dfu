@@ -188,7 +188,7 @@ class BleDfuPlugin : FlutterPlugin, ActivityAware, MethodCallHandler, StreamHand
             DfuServiceListenerHelper.unregisterProgressListener(binding.applicationContext, dfuProgressListener)
         }
     }
-
+    //not used currently
     @Suppress("SameParameterValue")
     private fun downloadFile(urlString: String, fileName: String): Uri? {
         Log.d("BleDfuPlugin", "downloadFile $urlString $fileName")
