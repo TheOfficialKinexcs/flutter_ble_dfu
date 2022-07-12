@@ -63,7 +63,7 @@ public class SwiftBleDfuPlugin: NSObject, FlutterPlugin, DFUServiceDelegate {
                //initiator.progressDelegate = self
                initiator.delegate = self
                initiator.enableUnsafeExperimentalButtonlessServiceInSecureDfu = true
-               dfuController = initiator.with(firmware: selectedFirmware!).start(targetWithIdentifier: identifier)
+               dfuController = initiator.with(firmware: selectedFirmware).start(targetWithIdentifier: identifier)
            }
        } catch {
            print(error.localizedDescription)
@@ -81,7 +81,7 @@ public class SwiftBleDfuPlugin: NSObject, FlutterPlugin, DFUServiceDelegate {
            dfuController = nil
            channel.invokeMethod("onDfuCompleted", arguments: deviceAddress)
        default:
-           print("dfuStateDidChange to: \(state.description())")
+           print("dfuStateDidChange to: \(state.description)")
        }
    }
 }
