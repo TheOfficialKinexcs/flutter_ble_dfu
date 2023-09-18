@@ -3,13 +3,13 @@ import UIKit
 import iOSDFULibrary
 import CoreBluetooth
  
-public class SwiftBleDfuPlugin: NSObject, FlutterPlugin, DFUServiceDelegate {
+public class SwiftBleDfuPlugin: NSObject, FlutterPlugin, DFUServiceDelegate, DFUProgressDelegate {
    public func dfuError(_ error: DFUError, didOccurWithMessage message: String) {
        print("\(deviceAddress!) onError, message : \(message)")
        channel.invokeMethod("onError", arguments: deviceAddress)
    }
  
-  
+  // event channel for progress, name is ble_dfu_event
    let registrar: FlutterPluginRegistrar
    let channel: FlutterMethodChannel
    var pendingResult: FlutterResult?
@@ -60,7 +60,7 @@ public class SwiftBleDfuPlugin: NSObject, FlutterPlugin, DFUServiceDelegate {
            } else {
 
                let initiator = DFUServiceInitiator()
-               //initiator.progressDelegate = self
+               initiator.progressDelegate = self
                initiator.delegate = self
                initiator.enableUnsafeExperimentalButtonlessServiceInSecureDfu = true
                dfuController = initiator.with(firmware: selectedFirmware).start(targetWithIdentifier: identifier)
@@ -84,6 +84,14 @@ public class SwiftBleDfuPlugin: NSObject, FlutterPlugin, DFUServiceDelegate {
            print("dfuStateDidChange to: \(state.description)")
        }
    }
+
+//    dfuProgressDidChange
+   public func dfuProgressDidChange(for part: Int, outOf totalParts: Int, to progress: Int, currentSpeedBytesPerSecond: Double, avgSpeedBytesPerSecond: Double) {
+         print("dfuProgressDidChange: \(progress)")
+        //  channel.invokeMethod("onProgressChanged", arguments: progress)
+    }
+
 }
+
 
 
