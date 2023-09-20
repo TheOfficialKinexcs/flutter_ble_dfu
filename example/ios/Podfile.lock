@@ -5,14 +5,11 @@ PODS:
   - Flutter (1.0.0)
   - iOSDFULibrary (4.13.0):
     - ZIPFoundation (= 0.9.11)
-  - path_provider_ios (0.0.1):
-    - Flutter
   - ZIPFoundation (0.9.11)
 
 DEPENDENCIES:
   - ble_dfu (from `.symlinks/plugins/ble_dfu/ios`)
   - Flutter (from `Flutter`)
-  - path_provider_ios (from `.symlinks/plugins/path_provider_ios/ios`)
 
 SPEC REPOS:
   trunk:
@@ -24,14 +21,11 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/ble_dfu/ios"
   Flutter:
     :path: Flutter
-  path_provider_ios:
-    :path: ".symlinks/plugins/path_provider_ios/ios"
 
 SPEC CHECKSUMS:
   ble_dfu: 33ade362132e21c24f1d13707c78d1e1dfda27ec
-  Flutter: 50d75fe2f02b26cc09d224853bb45737f8b3214a
+  Flutter: f04841e97a9d0b0a8025694d0796dd46242b2854
   iOSDFULibrary: 3b9de67ed4bfb901b5f09c2fea843f65e152612d
-  path_provider_ios: 14f3d2fd28c4fdb42f44e0f751d12861c43cee02
   ZIPFoundation: b1f0de4eed33e74a676f76e12559ab6b75990197
 
 PODFILE CHECKSUM: ef19549a9bc3046e7bb7d2fab4d021637c0c58a3

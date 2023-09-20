@@ -3,10 +3,14 @@ import UIKit
 import iOSDFULibrary
 import CoreBluetooth
  
-public class SwiftBleDfuPlugin: NSObject, FlutterPlugin, DFUServiceDelegate, DFUProgressDelegate {
+public class SwiftBleDfuPlugin: NSObject, FlutterPlugin, DFUServiceDelegate, DFUProgressDelegate, FlutterStreamHandler {
+    
+    var eventSink: FlutterEventSink?
+    
    public func dfuError(_ error: DFUError, didOccurWithMessage message: String) {
        print("\(deviceAddress!) onError, message : \(message)")
        channel.invokeMethod("onError", arguments: deviceAddress)
+       eventSink?(FlutterError(code: "\(error.rawValue)", message: message, details: nil))
    }
  
   // event channel for progress, name is ble_dfu_event
@@ -22,9 +26,13 @@ public class SwiftBleDfuPlugin: NSObject, FlutterPlugin, DFUServiceDelegate, DFU
    }
   
    public static func register(with registrar: FlutterPluginRegistrar) {
+       let eventChannel = FlutterEventChannel(name: "ble_dfu_event", binaryMessenger: registrar.messenger())
+       
+       
        let channel = FlutterMethodChannel(name: "ble_dfu", binaryMessenger: registrar.messenger())
        let instance = SwiftBleDfuPlugin(registrar, channel)
        registrar.addMethodCallDelegate(instance, channel: channel)
+       eventChannel.setStreamHandler(instance)
    }
   
    public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
@@ -80,6 +88,8 @@ public class SwiftBleDfuPlugin: NSObject, FlutterPlugin, DFUServiceDelegate, DFU
            print("\(deviceAddress!) onDfuCompleted")
            dfuController = nil
            channel.invokeMethod("onDfuCompleted", arguments: deviceAddress)
+       case .aborted:
+                  eventSink?(FlutterError(code: "\(state.rawValue)", message: "DFU Aborted", details: nil))
        default:
            print("dfuStateDidChange to: \(state.description)")
        }
@@ -88,8 +98,19 @@ public class SwiftBleDfuPlugin: NSObject, FlutterPlugin, DFUServiceDelegate, DFU
 //    dfuProgressDidChange
    public func dfuProgressDidChange(for part: Int, outOf totalParts: Int, to progress: Int, currentSpeedBytesPerSecond: Double, avgSpeedBytesPerSecond: Double) {
          print("dfuProgressDidChange: \(progress)")
+       self.eventSink!("part: \(part), outOf: \(totalParts), to: \(progress), speed: \(currentSpeedBytesPerSecond)")
         //  channel.invokeMethod("onProgressChanged", arguments: progress)
     }
+    
+    public func onListen(withArguments arguments: Any?, eventSink events: @escaping FlutterEventSink) -> FlutterError? {
+           self.eventSink = events
+           return nil
+       }
+       
+       public func onCancel(withArguments arguments: Any?) -> FlutterError? {
+           self.eventSink = nil
+           return nil
+       }
 
 }
 
